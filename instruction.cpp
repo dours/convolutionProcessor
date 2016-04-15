@@ -16,7 +16,7 @@ sc_uint<DATA_WIDTH> Instruction::scalarOp(tOperationType op, sc_uint<DATA_WIDTH>
               if (a > b) return 1;
               return 0;
     case PRINT:
-              printf("%i, ", b.to_uint());
+              fprintf(stderr, "%i ", b.to_uint());
               return b;
     default:
               return 0xbeef;
@@ -45,21 +45,21 @@ void Instruction::execute(ProcessorState *st, Unit &u) {
     for (int i = 0; i < VECTOR_ALU_WIDTH; ++i) result[i] = scalarOp(opType[i], l[i], r[i]);
   }
 
-  if (PRINT == opType[0]) printf("\n");
+  if (PRINT == opType[0]){ fprintf(stderr,"\n");}
 
   if (COMMON == dstk) st->setCommon(dst, result); else u.setLocal(dst, result);
 
     delete [] l;
     if (COMMON != ropndk) delete [] r;
 }
+
   Instruction::Instruction(){}
   Instruction::Instruction(
     tOperandType lk, sc_uint<LOG_N_REGS> l,
     tOperandType rk, sc_uint<LOG_N_REGS> r,
     tOperandType dstk, sc_uint<LOG_N_REGS> dst,
     tOperationKind   opk, tOperationType op,
-    sc_uint<DATA_WIDTH> c, bool f
-  ) {
+    sc_uint<DATA_WIDTH> c) {
 
     lopndk = lk;
     lopnd = l;
@@ -70,5 +70,4 @@ void Instruction::execute(ProcessorState *st, Unit &u) {
     opKind = opk;
     for (int i = 0; i < VECTOR_ALU_WIDTH; ++i) { opType[i] = op; }
     if (SHIFT_IN == op) theConstant = c; else theConstant = 0xbeef;
-    finishedThisWindow = f;
   }

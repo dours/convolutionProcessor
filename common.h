@@ -10,7 +10,7 @@
 #define N_REGS  16
 #define LOG_N_REGS 4
 
-#define UNITS_COUNT 16
+#define UNITS_COUNT 26
 
 #define W 100
 #define H 100
