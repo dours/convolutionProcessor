@@ -20,28 +20,31 @@
     }
 
     void Unit::regWrite() {
-         for (int i = 0; i < N_REGS; i++) {
-            for (int j = 0; j < VECTOR_ALU_WIDTH; j++) {
-                *next_data[i][j] = data[i][j];
-                *next_local_data[i][j] = local_data[i][j];
+		if(instruction != NULL){
+			fprintf(stderr, this->basename());
+			fprintf(stderr, " Write\n");
 
-            }
-        }
-
+			for (int i = 0; i < N_REGS; i++) {
+				for (int j = 0; j < VECTOR_ALU_WIDTH; j++) {
+               		*next_data[i][j] = data[i][j];
+					*next_local_data[i][j] = local_data[i][j];
+				}
+        	}
+    	}
     }
 
     void Unit::execute() {
         if(instruction != NULL){
-        	//fprintf(stderr, this->basename());
-        	//fprintf(stderr, " Exec\n");
+        	fprintf(stderr, this->basename());
+        	fprintf(stderr, " Exec ");
             instruction->execute(proc, *this);
     	}
     }
 
     Unit::Unit(::sc_core::sc_module_name) {
-		SC_METHOD(execute);
+		SC_METHOD(regWrite);
         sensitive << clock.pos();
-        SC_METHOD(reWrite);
+        SC_METHOD(execute);
         sensitive << clock.pos();
     }
 

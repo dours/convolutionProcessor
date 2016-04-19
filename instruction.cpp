@@ -49,13 +49,14 @@ void Instruction::execute(ProcessorState *st, Unit &u) {
 	if (PRINT == opType[0]){ fprintf(stderr,"\n");}
 	else
 	{ 
-	    /*fprintf(stderr, "from ");
+	    fprintf(stderr, "from ");
 	    for (int i = 0; i < VECTOR_ALU_WIDTH; ++i) fprintf(stderr, "%i ", l[i].to_uint());
 	    fprintf(stderr, "and ");
 	    for (int i = 0; i < VECTOR_ALU_WIDTH; ++i) fprintf(stderr, "%i ", r[i].to_uint());
 	    fprintf(stderr, "result ");
 	    for (int i = 0; i < VECTOR_ALU_WIDTH; ++i) fprintf(stderr, "%i ", result[i].to_uint());
-	    fprintf(stderr, "\n");*/
+	    fprintf(stderr, "\n");
+
 		u.setLocal(dst, result);
 	}
 
