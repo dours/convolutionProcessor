@@ -6,6 +6,7 @@
 
 // how many scalars are processed in parallel = window size
 #define VECTOR_ALU_WIDTH 8
+#define WINDOW_SIZE 3
 
 #define N_REGS  16
 #define LOG_N_REGS 4

@@ -1,45 +1,27 @@
 #include "LordOfTheHeaders.h"
-
-char *getNumName(char *name, int num) {
-    name[4] = (char) ('A' + num);
-    return name;
-}
-
+ 
 void pipeline_sc::genProgram() {
     (*((Unit *) (units[0]))).instruction = new Instruction(LOCAL, 0, LOCAL, 0, LOCAL, 0, VECTOR, XOR, 0);
+   
+    (*((Unit *) (units[1]))).instruction = new Instruction(WINDOW, 0, COMMON, 0, LOCAL, 1, VECTOR, SHORT_MUL, 0);
+    (*((Unit *) (units[2]))).instruction = new Instruction(LOCAL, 0, LOCAL, 1, LOCAL, 0, VECTOR, ADD, 0);
 
-    (*((Unit *) (units[1]))).instruction = new Instruction(WINDOW, 0, LOCAL, 0, COMMON, 0, VECTOR, SHIFT_IN, 1);
-    (*((Unit *) (units[2]))).instruction = new Instruction(WINDOW, 0, LOCAL, 0, COMMON, 0, VECTOR, SHIFT_IN, 2);
-    (*((Unit *) (units[3]))).instruction = new Instruction(WINDOW, 0, LOCAL, 0, COMMON, 0, VECTOR, SHIFT_IN, 1);
+    (*((Unit *) (units[3]))).instruction = new Instruction(WINDOW, 1, COMMON, 1, LOCAL, 1, VECTOR, SHORT_MUL, 0);
+    (*((Unit *) (units[4]))).instruction = new Instruction(LOCAL, 0, LOCAL, 1, LOCAL, 0, VECTOR, ADD, 0);
 
-    (*((Unit *) (units[4]))).instruction = new Instruction(WINDOW, 0, LOCAL, 0, COMMON, 1, VECTOR, SHIFT_IN, 2);
-    (*((Unit *) (units[5]))).instruction = new Instruction(WINDOW, 0, LOCAL, 1, COMMON, 1, VECTOR, SHIFT_IN, 4);
-    (*((Unit *) (units[6]))).instruction = new Instruction(WINDOW, 0, LOCAL, 1, COMMON, 1, VECTOR, SHIFT_IN, 2);
+    (*((Unit *) (units[5]))).instruction = new Instruction(WINDOW, 2, COMMON, 2, LOCAL, 1, VECTOR, SHORT_MUL, 0);
+    (*((Unit *) (units[6]))).instruction = new Instruction(LOCAL, 0, LOCAL, 1, LOCAL, 0, VECTOR, ADD, 0);
 
-    (*((Unit *) (units[7]))).instruction = new Instruction(WINDOW, 0, LOCAL, 0, COMMON, 2, VECTOR, SHIFT_IN, 1);
-    (*((Unit *) (units[8]))).instruction = new Instruction(WINDOW, 0, LOCAL, 2, COMMON, 2, VECTOR, SHIFT_IN, 2);
-    (*((Unit *) (units[9]))).instruction = new Instruction(WINDOW, 0, LOCAL, 2, COMMON, 2, VECTOR, SHIFT_IN, 1);
+    (*((Unit *) (units[7]))).instruction = new Instruction(LOCAL, 2, LOCAL, 0, LOCAL, 0, REDUCE, ADD, 0);
+    (*((Unit *) (units[8]))).instruction = new Instruction(LOCAL, 3, LOCAL, 0, LOCAL, 0, REDUCE, ADD, 0);
 
-    (*((Unit *) (units[10]))).instruction = new Instruction(WINDOW, 0, COMMON, 0, LOCAL, 1, VECTOR, SHORT_MUL, 0);
-    (*((Unit *) (units[11]))).instruction = new Instruction(LOCAL, 0, LOCAL, 1, LOCAL, 0, VECTOR, ADD, 0);
-
-    (*((Unit *) (units[12]))).instruction = new Instruction(WINDOW, 1, COMMON, 1, LOCAL, 1, VECTOR, SHORT_MUL, 0);
-    (*((Unit *) (units[13]))).instruction = new Instruction(LOCAL, 0, LOCAL, 1, LOCAL, 0, VECTOR, ADD, 0);
-
-    (*((Unit *) (units[14]))).instruction = new Instruction(WINDOW, 2, COMMON, 2, LOCAL, 1, VECTOR, SHORT_MUL, 0);
-    (*((Unit *) (units[15]))).instruction = new Instruction(LOCAL, 0, LOCAL, 1, LOCAL, 0, VECTOR, ADD, 0);
-
-    (*((Unit *) (units[16]))).instruction = new Instruction(LOCAL, 2, LOCAL, 0, LOCAL, 0, REDUCE, ADD, 0);
-    (*((Unit *) (units[17]))).instruction = new Instruction(LOCAL, 3, LOCAL, 0, LOCAL, 0, REDUCE, ADD, 0);
-
-    (*((Unit *) (units[18]))).instruction = new Instruction(LOCAL, 0, LOCAL, 0, LOCAL, 0, VECTOR, PRINT, 0);
-
-    (*((Unit *) (units[19]))).instruction = new Instruction(COMMON, 0, COMMON, 0, COMMON, 0, VECTOR, PRINT, 0);
-    (*((Unit *) (units[20]))).instruction = new Instruction(COMMON, 1, COMMON, 1, COMMON, 1, VECTOR, PRINT, 0);
-    (*((Unit *) (units[21]))).instruction = new Instruction(COMMON, 2, COMMON, 2, COMMON, 2, VECTOR, PRINT, 0);
+    (*((Unit *) (units[9]))).instruction = new Instruction(LOCAL, 0, LOCAL, 0, LOCAL, 0, VECTOR, PRINT, 0);
 }
 
 pipeline_sc::pipeline_sc(::sc_core::sc_module_name) {
+    SC_METHOD(genWindow);
+    sensitive << clock.pos();
+    
     for (int i = 0; i < UNITS_COUNT; i++) {
         units[i] = ::sc_core::sc_module_dynalloc(new Unit("Unit"));
         (*((Unit *) (units[i]))).clock(clock);
@@ -61,11 +43,34 @@ pipeline_sc::pipeline_sc(::sc_core::sc_module_name) {
         }
     }
 
+    WindowX = -1;
+    WindowY = 0;
+
     genProgram();
 
+}
+
+void pipeline_sc::genWindow(){
+
+	WindowX++;
+	if(WindowX + WINDOW_SIZE == W){
+		WindowX = 0;
+		WindowY++;
+	}
+
+	if(WindowY + WINDOW_SIZE == H)
+		WindowY = 0;
+
+	fprintf(stderr, "Generated window x = %i y = %i\n", WindowX, WindowY);	
+
+    for (int y = 0; y < WINDOW_SIZE; y++)
+    	for (int x = 0; x < WINDOW_SIZE; x++)
+			(*((Unit *) (units[0]))).data[y][x] = st->big_window[y + WindowY][x + WindowX]; 
 }
 
 void pipeline_sc::setProc(ProcessorState *proc) {
     for (int i = 0; i < UNITS_COUNT; i++)
         (*((Unit *) (units[i]))).proc = proc;
+
+	this->st = proc;
 }

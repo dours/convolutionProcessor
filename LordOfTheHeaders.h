@@ -20,8 +20,6 @@ struct ProcessorState {
     sc_uint<DATA_WIDTH> big_window[H][W];
     sc_uint<DATA_WIDTH> common_reg[N_REGS][VECTOR_ALU_WIDTH];
 
-    void setCommon(int addr, sc_uint<DATA_WIDTH> *from);
-
     ProcessorState();
 };
 
@@ -31,10 +29,17 @@ SC_MODULE(pipeline_sc) {
 
     sc_module *units[UNITS_COUNT];
 
+    ProcessorState *st;
+
+    int WindowX;
+    int WindowY;
+
     sc_signal<sc_uint<DATA_WIDTH> > res_data[N_REGS][VECTOR_ALU_WIDTH];
     sc_signal<sc_uint<DATA_WIDTH> > res_local_data[N_REGS][VECTOR_ALU_WIDTH];
 
     SC_CTOR(pipeline_sc);
+
+    void genWindow();
     void genProgram();
     void setProc(ProcessorState *proc);
 

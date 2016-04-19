@@ -20,11 +20,7 @@
     }
 
     void Unit::regWrite() {
-
-        fprintf(stderr, this->basename());
-        fprintf(stderr, " Write\n");
-
-        for (int i = 0; i < N_REGS; i++) {
+         for (int i = 0; i < N_REGS; i++) {
             for (int j = 0; j < VECTOR_ALU_WIDTH; j++) {
                 *next_data[i][j] = data[i][j];
                 *next_local_data[i][j] = local_data[i][j];
@@ -35,16 +31,17 @@
     }
 
     void Unit::execute() {
-        fprintf(stderr, this->basename());
-        fprintf(stderr, " Exec\n");
-        if(instruction != NULL)
+        if(instruction != NULL){
+        	//fprintf(stderr, this->basename());
+        	//fprintf(stderr, " Exec\n");
             instruction->execute(proc, *this);
+    	}
     }
 
     Unit::Unit(::sc_core::sc_module_name) {
-        SC_METHOD(regWrite);
+		SC_METHOD(execute);
         sensitive << clock.pos();
-        SC_METHOD(execute);
+        SC_METHOD(reWrite);
         sensitive << clock.pos();
     }
 

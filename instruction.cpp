@@ -35,22 +35,32 @@ void Instruction::execute(ProcessorState *st, Unit &u) {
     for (int i = VECTOR_ALU_WIDTH / reductionStage; i < VECTOR_ALU_WIDTH; ++i) l[i] = r[i] = 0;
   }
 
-  sc_uint<DATA_WIDTH> result[VECTOR_ALU_WIDTH];
-  for (int i = 0; i < VECTOR_ALU_WIDTH; ++i) result[i] = 0xbeef;
+	sc_uint<DATA_WIDTH> result[VECTOR_ALU_WIDTH];
+	for (int i = 0; i < VECTOR_ALU_WIDTH; ++i) result[i] = 0xbeef;
 
-  if (SHIFT_IN == opType[VECTOR_ALU_WIDTH - 1]) { // this rather special instruction is to load constant vectors in fact
-    for (int i = VECTOR_ALU_WIDTH - 1; i > 0; --i) result[i] = r[i - 1];
-    result[0] = theConstant;
-  } else { 
-    for (int i = 0; i < VECTOR_ALU_WIDTH; ++i) result[i] = scalarOp(opType[i], l[i], r[i]);
-  }
+	if (SHIFT_IN == opType[VECTOR_ALU_WIDTH - 1]) { // this rather special instruction is to load constant vectors in fact
+		for (int i = VECTOR_ALU_WIDTH - 1; i > 0; --i)
+			result[i] = r[i - 1];
+		result[0] = theConstant;
+	} else { 
+		for (int i = 0; i < VECTOR_ALU_WIDTH; ++i) result[i] = scalarOp(opType[i], l[i], r[i]);
+	}
 
-  if (PRINT == opType[0]){ fprintf(stderr,"\n");}
+	if (PRINT == opType[0]){ fprintf(stderr,"\n");}
+	else
+	{ 
+	    /*fprintf(stderr, "from ");
+	    for (int i = 0; i < VECTOR_ALU_WIDTH; ++i) fprintf(stderr, "%i ", l[i].to_uint());
+	    fprintf(stderr, "and ");
+	    for (int i = 0; i < VECTOR_ALU_WIDTH; ++i) fprintf(stderr, "%i ", r[i].to_uint());
+	    fprintf(stderr, "result ");
+	    for (int i = 0; i < VECTOR_ALU_WIDTH; ++i) fprintf(stderr, "%i ", result[i].to_uint());
+	    fprintf(stderr, "\n");*/
+		u.setLocal(dst, result);
+	}
 
-  if (COMMON == dstk) st->setCommon(dst, result); else u.setLocal(dst, result);
-
-    delete [] l;
-    if (COMMON != ropndk) delete [] r;
+	delete [] l;
+	if (COMMON != ropndk) delete [] r;
 }
 
   Instruction::Instruction(){}
