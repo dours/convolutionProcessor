@@ -3,21 +3,21 @@
 using namespace std;
  
 void pipeline_sc::genProgram() {
-    (*((Unit *) (units[0]))).instruction = new Instruction(LOCAL, 0, LOCAL, 0, LOCAL, 0, VECTOR, XOR, 0);
+    units[0]->instruction = new Instruction(LOCAL, 0, LOCAL, 0, LOCAL, 0, VECTOR, XOR, 0);
    
-    (*((Unit *) (units[1]))).instruction = new Instruction(WINDOW, 0, COMMON, 0, LOCAL, 1, VECTOR, SHORT_MUL, 0);
-    (*((Unit *) (units[2]))).instruction = new Instruction(LOCAL, 0, LOCAL, 1, LOCAL, 0, VECTOR, ADD, 0);
+    units[1].instruction = new Instruction(WINDOW, 0, COMMON, 0, LOCAL, 1, VECTOR, SHORT_MUL, 0);
+    units[2].instruction = new Instruction(LOCAL, 0, LOCAL, 1, LOCAL, 0, VECTOR, ADD, 0);
 
-    (*((Unit *) (units[3]))).instruction = new Instruction(WINDOW, 1, COMMON, 1, LOCAL, 1, VECTOR, SHORT_MUL, 0);
-    (*((Unit *) (units[4]))).instruction = new Instruction(LOCAL, 0, LOCAL, 1, LOCAL, 0, VECTOR, ADD, 0);
+    units[3].instruction = new Instruction(WINDOW, 1, COMMON, 1, LOCAL, 1, VECTOR, SHORT_MUL, 0);
+    units[4].instruction = new Instruction(LOCAL, 0, LOCAL, 1, LOCAL, 0, VECTOR, ADD, 0);
 
-    (*((Unit *) (units[5]))).instruction = new Instruction(WINDOW, 2, COMMON, 2, LOCAL, 1, VECTOR, SHORT_MUL, 0);
-    (*((Unit *) (units[6]))).instruction = new Instruction(LOCAL, 0, LOCAL, 1, LOCAL, 0, VECTOR, ADD, 0);
+    units[5].instruction = new Instruction(WINDOW, 2, COMMON, 2, LOCAL, 1, VECTOR, SHORT_MUL, 0);
+    units[6].instruction = new Instruction(LOCAL, 0, LOCAL, 1, LOCAL, 0, VECTOR, ADD, 0);
 
-    (*((Unit *) (units[7]))).instruction = new Instruction(LOCAL, 2, LOCAL, 0, LOCAL, 0, REDUCE, ADD, 0);
-    (*((Unit *) (units[8]))).instruction = new Instruction(LOCAL, 3, LOCAL, 0, LOCAL, 0, REDUCE, ADD, 0);
+    units[7].instruction = new Instruction(LOCAL, 2, LOCAL, 0, LOCAL, 0, REDUCE, ADD, 0);
+    units[8].instruction = new Instruction(LOCAL, 3, LOCAL, 0, LOCAL, 0, REDUCE, ADD, 0);
 
-    (*((Unit *) (units[9]))).instruction = new Instruction(LOCAL, 0, LOCAL, 0, LOCAL, 0, VECTOR, PRINT, 0); 
+    units[9].instruction = new Instruction(LOCAL, 0, LOCAL, 0, LOCAL, 0, VECTOR, PRINT, 0); 
 }
 
 string getName(int n){
@@ -35,7 +35,7 @@ pipeline_sc::pipeline_sc(::sc_core::sc_module_name) : clock("clock") {
         units[i]->clock(clock);
     }
 
-    for (int i = 0; i < UNITS_COUNT - 1; i++) {
+    for (int i = 0; i < UNITS_COUNT; i++) {
         for (int j = 0; j < N_REGS; j++) {
             for (int k = 0; k < VECTOR_ALU_WIDTH; k++) {
             	units[i]->next_data[j][k](res_data[i][j][k]);	
@@ -53,10 +53,7 @@ pipeline_sc::pipeline_sc(::sc_core::sc_module_name) : clock("clock") {
     for (int j = 0; j < N_REGS; j++) {
         for (int k = 0; k < VECTOR_ALU_WIDTH; k++) {
         	units[0]->data[j][k](res_img[j][k]);
-        	
-        	units[UNITS_COUNT - 1]->next_data[j][k](end_data[j][k]);
-        	units[UNITS_COUNT - 1]->next_local_data[j][k](end_local_data[j][k]);
-
+        	units[0]->local_data[j][k](res_local_img[j][k]);
         }
     } 
 

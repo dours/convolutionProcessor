@@ -39,11 +39,9 @@ SC_MODULE(pipeline_sc) {
     sc_signal<sc_uint<DATA_WIDTH> > res_local_data[UNITS_COUNT][N_REGS][VECTOR_ALU_WIDTH];
 
     sc_signal<sc_uint<DATA_WIDTH> > res_img[N_REGS][VECTOR_ALU_WIDTH];
-    
-    sc_signal<sc_uint<DATA_WIDTH> > end_data[N_REGS][VECTOR_ALU_WIDTH];
-    sc_signal<sc_uint<DATA_WIDTH> > end_local_data[N_REGS][VECTOR_ALU_WIDTH];
-
-    SC_CTOR(pipeline_sc);
+    sc_signal<sc_uint<DATA_WIDTH> > res_local_img[N_REGS][VECTOR_ALU_WIDTH];
+        
+	SC_CTOR(pipeline_sc);
 
     void genWindow();
     void genProgram();
