@@ -5,6 +5,7 @@
 #define CONVOLUTIONPROC_LORDOFTHEHEADERS_H
 
 class Instruction;
+class Unit;
 
 enum tOperandType {
     WINDOW, LOCAL, COMMON
@@ -27,31 +28,34 @@ SC_MODULE(pipeline_sc) {
 
     sc_in<bool> clock;
 
-    sc_module *units[UNITS_COUNT];
+    Unit *units[UNITS_COUNT];
 
     ProcessorState *st;
 
     int WindowX;
     int WindowY;
 
-    sc_signal<sc_uint<DATA_WIDTH> > res_data[N_REGS][VECTOR_ALU_WIDTH];
-    sc_signal<sc_uint<DATA_WIDTH> > res_local_data[N_REGS][VECTOR_ALU_WIDTH];
+    sc_signal<sc_uint<DATA_WIDTH> > res_data[UNITS_COUNT][N_REGS][VECTOR_ALU_WIDTH];
+    sc_signal<sc_uint<DATA_WIDTH> > res_local_data[UNITS_COUNT][N_REGS][VECTOR_ALU_WIDTH];
+
+    sc_signal<sc_uint<DATA_WIDTH> > res_img[N_REGS][VECTOR_ALU_WIDTH];
+    
+    sc_signal<sc_uint<DATA_WIDTH> > end_data[N_REGS][VECTOR_ALU_WIDTH];
+    sc_signal<sc_uint<DATA_WIDTH> > end_local_data[N_REGS][VECTOR_ALU_WIDTH];
 
     SC_CTOR(pipeline_sc);
 
     void genWindow();
     void genProgram();
     void setProc(ProcessorState *proc);
-
-
 };
 
 SC_MODULE(Unit) {
-    sc_uint<DATA_WIDTH> data[N_REGS][VECTOR_ALU_WIDTH];
-    sc_uint<DATA_WIDTH> local_data[N_REGS][VECTOR_ALU_WIDTH];
+    sc_in<sc_uint<DATA_WIDTH> > data[N_REGS][VECTOR_ALU_WIDTH];
+    sc_in<sc_uint<DATA_WIDTH> > local_data[N_REGS][VECTOR_ALU_WIDTH];
 
-    sc_uint<DATA_WIDTH> *next_data[N_REGS][VECTOR_ALU_WIDTH];
-    sc_uint<DATA_WIDTH> *next_local_data[N_REGS][VECTOR_ALU_WIDTH];
+    sc_out<sc_uint<DATA_WIDTH> > next_data[N_REGS][VECTOR_ALU_WIDTH];
+    sc_out<sc_uint<DATA_WIDTH> > next_local_data[N_REGS][VECTOR_ALU_WIDTH];
 
     sc_in<bool> clock;
 
@@ -70,7 +74,7 @@ SC_MODULE(Unit) {
 
     SC_CTOR(Unit);
 
-    Unit();
+    Unit();                                       
 
 };
 

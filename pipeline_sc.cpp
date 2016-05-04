@@ -1,4 +1,6 @@
 #include "LordOfTheHeaders.h"
+#include <string>
+using namespace std;
  
 void pipeline_sc::genProgram() {
     (*((Unit *) (units[0]))).instruction = new Instruction(LOCAL, 0, LOCAL, 0, LOCAL, 0, VECTOR, XOR, 0);
@@ -15,33 +17,48 @@ void pipeline_sc::genProgram() {
     (*((Unit *) (units[7]))).instruction = new Instruction(LOCAL, 2, LOCAL, 0, LOCAL, 0, REDUCE, ADD, 0);
     (*((Unit *) (units[8]))).instruction = new Instruction(LOCAL, 3, LOCAL, 0, LOCAL, 0, REDUCE, ADD, 0);
 
-    (*((Unit *) (units[9]))).instruction = new Instruction(LOCAL, 0, LOCAL, 0, LOCAL, 0, VECTOR, PRINT, 0);
+    (*((Unit *) (units[9]))).instruction = new Instruction(LOCAL, 0, LOCAL, 0, LOCAL, 0, VECTOR, PRINT, 0); 
 }
 
-pipeline_sc::pipeline_sc(::sc_core::sc_module_name) {
+string getName(int n){
+	char buf[128];
+	snprintf(buf, 128, "UNIT_%i", n);
+	return string(buf);
+}
+
+pipeline_sc::pipeline_sc(::sc_core::sc_module_name) : clock("clock") {
     SC_METHOD(genWindow);
     sensitive << clock.pos();
     
     for (int i = 0; i < UNITS_COUNT; i++) {
-        units[i] = ::sc_core::sc_module_dynalloc(new Unit("Unit"));
-        (*((Unit *) (units[i]))).clock(clock);
+        units[i] = static_cast<Unit *>(::sc_core::sc_module_dynalloc(new Unit(getName(i).c_str())));
+        units[i]->clock(clock);
     }
 
     for (int i = 0; i < UNITS_COUNT - 1; i++) {
         for (int j = 0; j < N_REGS; j++) {
             for (int k = 0; k < VECTOR_ALU_WIDTH; k++) {
-                (*((Unit *) (units[i]))).next_data[j][k] = &(*((Unit *) (units[i + 1]))).data[j][k];
-                (*((Unit *) (units[i]))).next_local_data[j][k] = &(*((Unit *) (units[i + 1]))).local_data[j][k];
+            	units[i]->next_data[j][k](res_data[i][j][k]);	
+            	units[i]->next_local_data[j][k](res_local_data[i][j][k]);	
+            
+                if(i != 0){
+                	units[i]->data[j][k](res_data[i-1][j][k]);	
+            		units[i]->local_data[j][k](res_local_data[i-1][j][k]);	
+				}
+
             }
         }
     }
 
     for (int j = 0; j < N_REGS; j++) {
         for (int k = 0; k < VECTOR_ALU_WIDTH; k++) {
-            (*((Unit *) (units[UNITS_COUNT - 1]))).next_data[j][k] = &(*((Unit *) (units[UNITS_COUNT - 1]))).data[j][k];
-            (*((Unit *) (units[UNITS_COUNT - 1]))).next_local_data[j][k] = &(*((Unit *) (units[UNITS_COUNT - 1]))).local_data[j][k];
+        	units[0]->data[j][k](res_img[j][k]);
+        	
+        	units[UNITS_COUNT - 1]->next_data[j][k](end_data[j][k]);
+        	units[UNITS_COUNT - 1]->next_local_data[j][k](end_local_data[j][k]);
+
         }
-    }
+    } 
 
     WindowX = -1;
     WindowY = 0;
@@ -65,12 +82,12 @@ void pipeline_sc::genWindow(){
 
     for (int y = 0; y < WINDOW_SIZE; y++)
     	for (int x = 0; x < WINDOW_SIZE; x++)
-			(*((Unit *) (units[0]))).data[y][x] = st->big_window[y + WindowY][x + WindowX]; 
+			res_img[y][x] = st->big_window[y + WindowY][x + WindowX];    
 }
 
 void pipeline_sc::setProc(ProcessorState *proc) {
     for (int i = 0; i < UNITS_COUNT; i++)
-        (*((Unit *) (units[i]))).proc = proc;
+        units[i]->proc = proc;
 
 	this->st = proc;
 }
