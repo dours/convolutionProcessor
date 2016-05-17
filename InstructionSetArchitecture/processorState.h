@@ -1,4 +1,3 @@
-
 #ifndef PROCESSOR_STATE
 #define PROCESSOR_STATE
 
@@ -20,7 +19,7 @@ class ProcessorState {
   vector<sc_uint<DATA_WIDTH> >  localRegs[N_THREADS][N_REGS];
 
   int curThreadNo;
-  int windowXPos;
+  int windowXPos;                                                        `
   int windowYPos;
 
 public:
@@ -79,8 +78,4 @@ public:
 
 };
 
-
-
 #endif
-
-
